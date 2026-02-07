@@ -1,3 +1,7 @@
 
 # Don't index SpecStory auto-save files, but allow explicit context inclusion via @ references
+# Exclude history and project.json, but allow .what-is-this.md documentation
+.specstory/history/**
+.specstory/.project.json
+# Don't index SpecStory auto-save files, but allow explicit context inclusion via @ references
 .specstory/**
