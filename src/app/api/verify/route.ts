@@ -9,22 +9,23 @@ function getSupabase(): SupabaseClient | null {
   return createClient(url, key);
 }
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const POSTMARK_API_KEY = process.env.POSTMARK_API_KEY || '';
 
 async function sendVerificationEmail(email: string, token: string, agentName: string) {
   const verifyUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://agentkyc.io'}/verify/confirm?token=${token}`;
   
-  const response = await fetch('https://api.resend.com/emails', {
+  const response = await fetch('https://api.postmarkapp.com/email', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${RESEND_API_KEY}`,
-      'Content-Type': 'application/json'
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'X-Postmark-Server-Token': POSTMARK_API_KEY
     },
     body: JSON.stringify({
-      from: 'AgentKYC <hello@agentkyc.io>',
-      to: email,
-      subject: `Verify your agent: ${agentName}`,
-      html: `
+      From: 'AgentKYC <hello@agentkyc.io>',
+      To: email,
+      Subject: `Verify your agent: ${agentName}`,
+      HtmlBody: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #333;">Verify Your Agent</h1>
           <p>Thanks for applying to get <strong>${agentName}</strong> verified on AgentKYC!</p>
@@ -47,13 +48,14 @@ async function sendVerificationEmail(email: string, token: string, agentName: st
             <a href="https://agentkyc.io">agentkyc.io</a>
           </p>
         </div>
-      `
+      `,
+      MessageStream: 'outbound'
     })
   });
   
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(`Failed to send email: ${error.message}`);
+    throw new Error(`Failed to send email: ${error.Message || error.message || JSON.stringify(error)}`);
   }
   
   return response.json();
