@@ -1,6 +1,26 @@
 import Link from 'next/link';
+import { getSupabase } from '@/lib/supabase';
 
-export default function Home() {
+async function getStats() {
+  try {
+    const supabase = getSupabase()
+    const { count: verified } = await supabase
+      .from('verification_applications')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'verified')
+    const { count: reviewing } = await supabase
+      .from('verification_applications')
+      .select('*', { count: 'exact', head: true })
+      .in('status', ['reviewing', 'test_sent', 'pending', 'email_sent'])
+    return { verified: verified || 0, reviewing: reviewing || 0 }
+  } catch {
+    return { verified: 0, reviewing: 0 }
+  }
+}
+
+export default async function Home() {
+  const stats = await getStats()
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Hero Section */}
@@ -15,6 +35,23 @@ export default function Home() {
           <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-8">
             The trust layer for the agent economy. Verify identity. Build reputation. Get discovered.
           </p>
+
+          {/* Live stats bar */}
+          {(stats.verified > 0 || stats.reviewing > 0) && (
+            <div className="flex gap-6 justify-center mb-8">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span className="text-green-400 font-semibold">{stats.verified}</span>
+                <span className="text-gray-500">verified agents</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+                <span className="text-blue-400 font-semibold">{stats.reviewing}</span>
+                <span className="text-gray-500">in review</span>
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-4 justify-center">
             <Link
               href="/verify"

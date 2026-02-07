@@ -13,6 +13,7 @@ interface VerifiedAgent {
   identity_link: string;
   identity_type: string;
   approved_at: string;
+  handle: string | null;
 }
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -110,8 +111,9 @@ export default function RegistryPage() {
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredAgents.map(agent => (
-              <div key={agent.id} className="bg-gray-900 rounded-lg p-6 hover:bg-gray-800 transition">
+            {filteredAgents.map(agent => {
+              const cardContent = (
+              <div className="bg-gray-900 rounded-lg p-6 hover:bg-gray-800 transition block">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -130,6 +132,7 @@ export default function RegistryPage() {
                       rel="noopener noreferrer"
                       className="text-2xl hover:scale-110 transition"
                       title={`View on ${agent.identity_type}`}
+                      onClick={e => e.stopPropagation()}
                     >
                       {IDENTITY_ICONS[agent.identity_type] || '🔗'}
                     </a>
@@ -171,13 +174,22 @@ export default function RegistryPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-400 hover:text-blue-300 text-sm"
+                      onClick={e => e.stopPropagation()}
                     >
                       Visit →
                     </a>
                   )}
                 </div>
               </div>
-            ))}
+              );
+              return agent.handle ? (
+                <Link key={agent.id} href={`/agent/${agent.handle}`} className="block">
+                  {cardContent}
+                </Link>
+              ) : (
+                <div key={agent.id}>{cardContent}</div>
+              );
+            })}
           </div>
         )}
 

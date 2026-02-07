@@ -1,17 +1,16 @@
+// src/lib/supabase.ts
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from './env'
 
-let supabaseInstance: SupabaseClient | null = null
+let instance: SupabaseClient | null = null
 
-export function getSupabase(): SupabaseClient | null {
-  if (supabaseInstance) return supabaseInstance
-  
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_PROJECT_URL
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  
-  if (!supabaseUrl || !supabaseKey) {
-    return null
+export function getSupabase(): SupabaseClient {
+  if (instance) return instance
+
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('Supabase environment variables not configured')
   }
-  
-  supabaseInstance = createClient(supabaseUrl, supabaseKey)
-  return supabaseInstance
+
+  instance = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  return instance
 }
